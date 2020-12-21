@@ -384,6 +384,23 @@ fn calculate_peaks_hashes<
     }
     Ok(peaks_hashes)
 }
+pub struct MMRMerge(core::marker::PhantomData<[u8; 32]>);
+impl Merge for MMRMerge {
+	type Item = [u8; 32];
+
+	fn merge(lhs: &Self::Item, rhs: &Self::Item) -> Self::Item {
+		let encodable = (lhs, rhs);
+
+		lhs.clone()
+	}
+}
+pub fn calculate_peaks_hashes2(
+    mut leaves: Vec<(u64, [u8; 32])>,
+    mmr_size: u64,
+    proofs: Vec<[u8; 32]>,
+) -> Result<Vec<[u8; 32]>> {
+    calculate_peaks_hashes::<_, MMRMerge, _>(leaves, mmr_size, proofs.iter())
+}
 
 fn bagging_peaks_hashes<'a, T: 'a + PartialEq + Debug + Clone, M: Merge<Item = T>>(
     mut peaks_hashes: Vec<T>,
